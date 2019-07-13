@@ -98,8 +98,9 @@ for namespace in $NAMESPACES; do
 done
 
 [ -z "$DRY_RUN" ] || exit
-
+set -x
 cd "${GIT_REPO_PATH}"
+pwd
 git add .
 
 if ! git diff-index --quiet HEAD --; then
