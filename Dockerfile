@@ -1,4 +1,4 @@
-FROM alpine:3.11
+FROM alpine:3.20
 
 RUN apk update && \
   apk add --update \
@@ -9,25 +9,25 @@ RUN apk update && \
     curl \
     ca-certificates \
     jq \
-    python \
-    py-yaml \
-    py2-pip \
+    python3 \
+    py3-yaml \
+    py3-ijson \
+    py3-pip \
     libstdc++ \
     gpgme \
     git-crypt \
     && \
-  rm -rf /var/cache/apk/*
+    rm -rf /var/cache/apk/*
 
-RUN pip install ijson awscli
+RUN pip install --break-system-packages awscli
 RUN adduser -h /backup -D backup
 
-ENV KUBECTL_VERSION 1.17.0
-ENV KUBECTL_SHA256 6e0aaaffe5507a44ec6b1b8a0fb585285813b78cc045f8804e70a6aac9d1cb4c
-ENV KUBECTL_URI https://storage.googleapis.com/kubernetes-release/release/v${KUBECTL_VERSION}/bin/linux/amd64/kubectl
+ENV KUBECTL_VERSION 1.27.0
 
-RUN curl -SL ${KUBECTL_URI} -o kubectl && chmod +x kubectl
+RUN curl -SL https://dl.k8s.io/release/v${KUBECTL_VERSION}/bin/linux/amd64/kubectl -o kubectl && chmod +x kubectl && \
+    curl -LO "https://dl.k8s.io/release/v${KUBECTL_VERSION}/bin/linux/amd64/kubectl.sha256" && \
+    echo "$(cat kubectl.sha256) kubectl" | sha256sum -c || exit 10
 
-RUN echo "${KUBECTL_SHA256}  kubectl" | sha256sum -c - || exit 10
 ENV PATH="/:${PATH}"
 
 COPY entrypoint.sh /
